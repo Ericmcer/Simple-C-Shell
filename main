@@ -208,11 +208,6 @@ int main(void)
 
       
     }
-      /* the steps are:
-       (0) if built-in command, handle internally
-       (1) if not, fork a child process using fork()
-       (2) the child process will invoke execvp()
-       (3) if background == 0, the parent will wait,
-            otherwise returns to the setup() function. */
+ 
     
 }
