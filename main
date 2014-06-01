@@ -8,58 +8,50 @@
 
 #define MAX_LINE 80 /* 80 chars per line, per command, should be enough. */
 
-//I know this isnt the best way to do the history, only way I could think of accessing it through signal handler though.
-//Not sure how to pass arguments to function when it is called from signal handler.
 char *COMMANDHISTORY[80];
 int HISTORYSIZE = 0;
 
-/**
- * setup() reads in the next command line, separating it into distinct tokens
- * using whitespace as delimiters. setup() sets the args parameter as a
- * null-terminated string.
- */
+// setup() reads in the next command line, separating it into distinct tokens
+
 
 void setup(char inputBuffer[], char *args[],int *background)
 {
-    int length, /* # of characters in the command line */
-        i,      /* loop index for accessing inputBuffer array */
-        start,  /* index where beginning of next command parameter is */
-        ct;     /* index of where to place the next parameter into args[] */
+    int length, i, start, ct;     
    
     ct = 0;
 
-    /* read what the user enters on the command line */
+    // read what the user enters on the command line
     length = read(STDIN_FILENO, inputBuffer, MAX_LINE); 
     
     start = -1;
     if (length == 0)
-        exit(0);            /* ^d was entered, end of user command stream */
+        exit(0);            
     if (length < 0){
         perror("error reading the command");
-        exit(-1);           /* terminate with error code of -1 */
+        exit(-1);           
     }
 
-    /* examine every character in the inputBuffer */
+    // examine each character in the inputBuffer 
     for (i=0;i<length;i++) {
         switch (inputBuffer[i]){
           case ' ':
-          case '\t' :               /* argument separators */
+          case '\t' :               
             if(start != -1){
-                    args[ct] = &inputBuffer[start];    /* set up pointer */
+                 args[ct] = &inputBuffer[start];
                 ct++;
             }
-            inputBuffer[i] = '\0'; /* add a null char; make a C string */
+            inputBuffer[i] = '\0'; // append null char to c-string
             start = -1;
             break;
-          case '\n':                 /* should be the final char examined */
+          case '\n':                 
             if (start != -1){
                     args[ct] = &inputBuffer[start];    
                 ct++;
             }
                 inputBuffer[i] = '\0';
-                args[ct] = NULL; /* no more arguments to this command */
+                args[ct] = NULL; 
             break;
-          default :             /* some other character */
+          default :             
             if (start == -1)
                 start = i;
             if (inputBuffer[i] == '&'){
@@ -69,14 +61,13 @@ void setup(char inputBuffer[], char *args[],int *background)
             }
           }
      }   
-     args[ct] = NULL; /* just in case the input line was > 80 */
+     args[ct] = NULL; 
      
 }
 
 
 
 
-//###################
 //whisper function-lowercase string after whisper call
 void whisper(char *args[MAX_LINE/2+1]){
  
@@ -96,7 +87,7 @@ void whisper(char *args[MAX_LINE/2+1]){
 
 }
 
-// ####### History Function ##########
+//History Function-echo last 10 commands entered
 void history(){
   int nums = HISTORYSIZE;
   int i;
@@ -143,7 +134,7 @@ int processInput(char *args[MAX_LINE/2+1]){
 
 }
 
-
+//This will be called if ctrl-z is caught 
 void signalHandler(int sig){
     char *tempArgs[1];
     tempArgs[0] = "r";
@@ -171,10 +162,10 @@ int main(void)
 
     //#### Main loop, will process user input and execute commands as they are given #######
 
-    while (1){            /* Program terminates normally inside setup */
+    while (1){            // Program terminates normally inside setup 
        background = 0;
        printf("emshell[%i]\n", commandCounter );
-       setup(inputBuffer,args,&background);       /* get next command */
+       setup(inputBuffer,args,&background);       // get next command 
        commandCounter++;
        
        //store commands for history
@@ -186,7 +177,7 @@ int main(void)
         }
 
 
-       //if recognized command processInput returns 0, if not returns 1 and fork runs
+       //if recognized command processInput returns 0, if not returns 1 and fork creates child to handle command
        if(processInput(args)){
          pid_t  pid;
          pid = fork();
